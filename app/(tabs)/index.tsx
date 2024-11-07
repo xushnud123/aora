@@ -12,14 +12,14 @@ import { images } from "../../constants";
 import { EmptyState, SearchField, Trending, VideoCard } from "@/components";
 import { App } from "@/lib";
 import useAppWrite from "@/lib/usa-app-write";
+import { useGlobalContext } from "@/context/global-provider";
 
 const Home = () => {
-  const { data: posts, refetch, loading } = useAppWrite(App.getAllPosts);
-  const {
-    data: latestPosts,
-    refetch: latestPostRefetch,
-    loading: latestPostLoading,
-  } = useAppWrite(App.getAllPosts);
+  const { user } = useGlobalContext();
+  const { data: posts, refetch } = useAppWrite(App.getAllPosts);
+  const { data: latestPosts, refetch: latestPostRefetch } = useAppWrite(
+    App.getAllPosts
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -43,7 +43,7 @@ const Home = () => {
                   Welcome Back
                 </Text>
                 <Text className='text-2xl font-psemibold text-white'>
-                  JSMastery
+                  {user?.username}
                 </Text>
               </View>
 

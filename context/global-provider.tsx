@@ -13,7 +13,7 @@ export interface GlobalContextType {
   setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
   isLoading: boolean;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
-  user: User | null;
+  user: User;
   setUser: (e: User | null) => void;
 }
 const GlobalContext = createContext<GlobalContextType>({} as GlobalContextType);
@@ -24,11 +24,13 @@ export interface User {
   username: string;
   email: string;
   password: string;
+  $id: string;
+  avatar: string;
 }
 
 const GlobalProvider = ({ children }: { children: any }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | any>({} as User);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ const GlobalProvider = ({ children }: { children: any }) => {
           setUser(data);
         } else {
           setIsLoggedIn(false);
-          setUser(null);
+          setUser({});
         }
       })
       .catch((error) => console.log(error))

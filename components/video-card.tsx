@@ -61,6 +61,7 @@ const VideoCard: FC<Posts> = ({
             overflow: "hidden",
           }}
           resizeMode={ResizeMode.CONTAIN}
+          isMuted
           useNativeControls
           shouldPlay
           onPlaybackStatusUpdate={(status: any) => {

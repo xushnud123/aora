@@ -22,8 +22,10 @@ const SignIn = () => {
     } else {
       setLoading(true);
       try {
-        const result: any = await App.signIn(form);
-        setUser(result);
+        await App.signIn(form);
+        // State provider
+        const user: any = await App.getCurrentUser();
+        setUser(user);
         setIsLoggedIn(true);
 
         router.push("/(tabs)/");

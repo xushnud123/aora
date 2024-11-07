@@ -83,6 +83,8 @@ export const getCurrentUser = async () => {
     const currentAccount = await account.get();
     if (!currentAccount) throw Error;
 
+    console.log("currentAccount", currentAccount);
+
     const currentUser = await databases.listDocuments(
       config.databaseId,
       config.usersCollectionId,
@@ -90,7 +92,7 @@ export const getCurrentUser = async () => {
     );
 
     if (!currentUser) throw Error;
-
+    console.log("currentUser", currentUser.documents[0]);
     return currentUser.documents[0];
   } catch (error) {
     console.log(error);
@@ -136,6 +138,31 @@ export const getSearchPosts = async (query: string) => {
     );
 
     return posts.documents;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+export const getUserPosts = async (userId: string) => {
+  try {
+    const posts = await databases.listDocuments(
+      config.databaseId,
+      config.videosCollectionId,
+      [Query.equal("creator", userId)]
+    );
+
+    return posts.documents;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+export const signOut = async () => {
+  try {
+    const session = await account.deleteSession("current");
+    return session;
   } catch (error) {
     console.log(error);
     return null;

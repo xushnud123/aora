@@ -24,9 +24,13 @@ const SignUp = () => {
       Alert.alert("Error", "Iltimos hamma maydonni to'ldiring");
     } else {
       try {
-        const result: any = await App.createUser(form);
-        setUser(result);
+        await App.createUser(form);
+
+        // State provider
+        const user: any = await App.getCurrentUser();
+        setUser(user);
         setIsLoggedIn(true);
+
         router.push("/(tabs)/");
       } catch (error: any) {
         Alert.alert("Error", error.message);
