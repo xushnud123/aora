@@ -1,17 +1,27 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import React, { FC, useState } from "react";
 import { Posts } from "@/types/video";
 import { icons } from "@/constants";
 import { Video, ResizeMode } from "expo-av";
-import { cn } from "@/lib";
+import { App, cn } from "@/lib";
+import { useGlobalContext } from "@/context/global-provider";
 
 const VideoCard: FC<Posts> = ({
   title,
   video,
   thumbnail,
+  $id,
+  bookmark,
   creator: { avatar, username },
 }) => {
+  const { user } = useGlobalContext();
   const [play, setPlay] = useState(false);
+  const [book, setBook] = useState(false);
+
+  const onSaveBookmark = async () => {
+    await App.addBookmark({ userId: user.$id, postId: $id });
+    setBook(true);
+  };
 
   return (
     <View className='flex-col items-center px-4 mb-14'>
@@ -39,9 +49,19 @@ const VideoCard: FC<Posts> = ({
             </Text>
           </View>
         </View>
-        <View className='pt-2'>
-          <Image source={icons.menu} className='w-5 h-5' resizeMode='contain' />
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onSaveBookmark}
+          className={cn(
+            "rounded-xl mt-3 w-max h-max flex transition-all justify-center items-center opacity-100"
+          )}
+        >
+          <Image
+            source={bookmark || book ? icons.bookmarkActive : icons.bookmark}
+            className='w-5 h-5'
+            resizeMode='contain'
+          />
+        </TouchableOpacity>
       </View>
 
       {play ? (

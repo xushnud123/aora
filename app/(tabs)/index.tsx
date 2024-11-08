@@ -16,9 +16,9 @@ import { useGlobalContext } from "@/context/global-provider";
 
 const Home = () => {
   const { user } = useGlobalContext();
-  const { data: posts, refetch } = useAppWrite(App.getAllPosts);
-  const { data: latestPosts, refetch: latestPostRefetch } = useAppWrite(
-    App.getAllPosts
+  const { data: posts, refetch } = useAppWrite(() => App.getAllPosts(user.$id));
+  const { data: latestPosts, refetch: latestPostRefetch } = useAppWrite(() =>
+    App.getAllPosts(user.$id)
   );
   const [refreshing, setRefreshing] = useState(false);
 
