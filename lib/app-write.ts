@@ -1,10 +1,14 @@
+import { CreatePost } from "@/app/(tabs)/create";
+import { ImagePickerAsset } from "expo-image-picker";
 import {
   Account,
   Avatars,
   Client,
   Databases,
   ID,
+  ImageGravity,
   Query,
+  Storage,
 } from "react-native-appwrite";
 
 export const config = {
@@ -27,6 +31,7 @@ client
 const account = new Account(client);
 const avatars = new Avatars(client);
 const databases = new Databases(client);
+const storage = new Storage(client);
 
 export async function signIn({
   email,
@@ -83,8 +88,6 @@ export const getCurrentUser = async () => {
     const currentAccount = await account.get();
     if (!currentAccount) throw Error;
 
-    console.log("currentAccount", currentAccount);
-
     const currentUser = await databases.listDocuments(
       config.databaseId,
       config.usersCollectionId,
@@ -92,7 +95,7 @@ export const getCurrentUser = async () => {
     );
 
     if (!currentUser) throw Error;
-    console.log("currentUser", currentUser.documents[0]);
+
     return currentUser.documents[0];
   } catch (error) {
     console.log(error);
@@ -166,5 +169,103 @@ export const signOut = async () => {
   } catch (error) {
     console.log(error);
     return null;
+  }
+};
+
+export const getFilePreview = async ({
+  fileId,
+  type,
+}: {
+  fileId: any;
+  type: "video" | "image";
+}) => {
+  let fileUrl;
+
+  try {
+    if (type === "video") {
+      fileUrl = await storage.getFileView(config.storageId, fileId);
+    } else if (type === "image") {
+      fileUrl = await storage.getFilePreview(
+        config.storageId,
+        fileId,
+        2000,
+        2000,
+        ImageGravity.Top,
+        100
+      );
+    } else {
+      throw new Error("Invalid file type");
+    }
+
+    if (!fileUrl) throw Error;
+
+    return fileUrl;
+  } catch (error: any) {
+    throw new Error(error);
+  }
+};
+
+export const uploadFile = async ({
+  file,
+  type,
+}: {
+  file: ImagePickerAsset;
+  type: "video" | "image";
+}) => {
+  if (!file) return;
+
+  try {
+    // @ts-ignore
+    const name = `${Date.now().toString()}.${file.uri
+      ?.split(".")
+      ?.pop()
+      .toLowerCase()}`;
+
+    console.log(name);
+    const uploadedFile = await storage.createFile(
+      config.storageId,
+      ID.unique(),
+      {
+        name: (file.fileName as string) || name,
+        type: file.mimeType as string,
+        size: file.fileSize as number,
+        uri: file.uri,
+      }
+    );
+    const fileUrl = await getFilePreview({
+      fileId: uploadedFile.$id,
+      type,
+    });
+    return fileUrl;
+  } catch (error: any) {
+    console.log(type, error);
+    throw new Error(error);
+  }
+};
+
+export const createVideoPost = async (
+  form: CreatePost & { userId: string }
+) => {
+  try {
+    const [thumbnailUrl, videoUrl] = await Promise.all([
+      uploadFile({ file: form.thumbnail, type: "image" }),
+      uploadFile({ file: form.video, type: "video" }),
+    ]);
+    const newPost = await databases.createDocument(
+      config.databaseId,
+      config.videosCollectionId,
+      ID.unique(),
+      {
+        title: form.title,
+        thumbnail: thumbnailUrl,
+        video: videoUrl,
+        prompt: form.prompt,
+        creator: form.userId,
+      }
+    );
+
+    return newPost;
+  } catch (error: any) {
+    throw new Error(error);
   }
 };
